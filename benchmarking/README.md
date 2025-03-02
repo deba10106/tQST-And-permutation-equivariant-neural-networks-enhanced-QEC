@@ -33,6 +33,10 @@ The benchmarking process evaluates both approaches across multiple metrics:
 
 ### Performance Analysis
 
+![QEC Benchmark Results](plots/qec_benchmark_results.png)
+
+The benchmark results demonstrate several key findings:
+
 #### 1. Fidelity Analysis
 - **Low Error Regime (p=0.01)**:
   - ML-QEC achieves a mean fidelity of **0.983** with a standard deviation of **0.01**.
