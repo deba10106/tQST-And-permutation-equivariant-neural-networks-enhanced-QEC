@@ -56,17 +56,17 @@ Our complete QEC pipeline includes:
 ## 3. Results and Analysis
 
 ### 3.1 State Reconstruction Fidelity
-![Fidelity vs Noise](results/fidelity_vs_noise.png)
+![Fidelity vs Noise](mlqec/results/fidelity_vs_noise.png)
 
 Our method demonstrates remarkable robustness to noise, maintaining >90% fidelity even under significant noise conditions (up to 10% depolarizing noise). The error bars show the 95% confidence interval across different quantum states, indicating consistent performance across various input states.
 
 ### 3.2 Measurement Efficiency
-![Measurement Efficiency](results/measurement_efficiency.png)
+![Measurement Efficiency](mlqec/results/measurement_efficiency.png)
 
 A key advantage of our approach is the significant reduction in required measurements. The plot demonstrates logarithmic scaling in measurement requirements compared to the exponential scaling of traditional QST. For a 4-qubit system, we achieve comparable fidelity with only 32 measurements versus 256 for standard QST.
 
 ### 3.3 Error Syndrome Classification
-![Syndrome Confusion](results/syndrome_confusion.png)
+![Syndrome Confusion](mlqec/results/syndrome_confusion.png)
 
 The confusion matrix reveals excellent discrimination between different error syndromes. Notable observations:
 - 95% accuracy in identifying no-error states ('III')
@@ -75,7 +75,7 @@ The confusion matrix reveals excellent discrimination between different error sy
 - Slight confusion (15%) between adjacent two-qubit error patterns
 
 ### 3.4 Recovery Time Performance
-![Recovery Times](results/recovery_times.png)
+![Recovery Times](mlqec/results/recovery_times.png)
 
 Our implementation achieves fast error correction with:
 - Mean recovery time of 1.2µs
@@ -84,7 +84,7 @@ Our implementation achieves fast error correction with:
 This performance is particularly impressive for near-term quantum devices where error correction speed is crucial.
 
 ### 3.5 Resource Scaling
-![Resource Scaling](results/resource_scaling.png)
+![Resource Scaling](mlqec/results/resource_scaling.png)
 
 Analysis of computational resources shows favorable scaling:
 - Circuit depth increases linearly with qubit count
@@ -93,7 +93,7 @@ Analysis of computational resources shows favorable scaling:
 These scaling properties suggest good potential for extending to larger quantum systems.
 
 ### 3.6 Error Correlation Analysis
-![Error Correlation](results/error_correlation.png)
+![Error Correlation](mlqec/results/error_correlation.png)
 
 Novel insights into error patterns:
 - Strong negative correlation between error rate and spatial separation
@@ -102,7 +102,7 @@ Novel insights into error patterns:
 These findings inform optimal qubit layout and error correction strategies.
 
 ### 3.7 Learning Dynamics
-![Learning by Noise](results/learning_by_noise.png)
+![Learning by Noise](mlqec/results/learning_by_noise.png)
 
 Training analysis reveals:
 - Consistent convergence across noise levels
@@ -218,13 +218,15 @@ MLQEC/
 
 ### 7.3 Running the Analysis
 
+Rename config.py.bkp to config.py
+
 Run the training and evaluation pipeline:
 ```bash
 python src/train.py
 
 python src/utils.py
 ```
-All generated figures (e.g., `fidelity_vs_noise.png`, `measurement_efficiency.png`, `syndrome_confusion.png`, `recovery_times.png`, `resource_scaling.png`, `error_correlation.png`, and `learning_by_noise.png`) will be saved in the `results/` directory.
+All generated figures (e.g., `fidelity_vs_noise.png`, `measurement_efficiency.png`, `syndrome_confusion.png`, `recovery_times.png`, `resource_scaling.png`, `error_correlation.png`, and `learning_by_noise.png`) will be saved in the `mlqec/results/` directory.
 
 ## 8. Conclusion
 

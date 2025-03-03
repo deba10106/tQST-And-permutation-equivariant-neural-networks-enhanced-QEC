@@ -1,4 +1,5 @@
 # Configuration file for Quantum Error Correction parameters
+# Rename this file to config.py
 
 # Number of qubits
 N_QUBITS = 4
@@ -24,7 +25,7 @@ LEARNING_RATE = 0.001
 N_SAMPLES = 10000
 
 # Directory for saving results
-RESULTS_DIR = "mlqec/results"
+RESULTS_DIR = "results"
 
 # IBM Quantum Configuration
 IBMQ_API_TOKEN = None  # Add your IBM Quantum API token here

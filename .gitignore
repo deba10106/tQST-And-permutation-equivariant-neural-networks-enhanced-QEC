@@ -27,6 +27,7 @@ rep_2502.15305v1/venv/
 IBM/venv
 ENV/
 .env
+config.py
 
 # IDE
 .idea/

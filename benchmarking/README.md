@@ -33,44 +33,56 @@ The benchmarking process evaluates both approaches across multiple metrics:
 
 ### Performance Analysis
 
+### Current Benchmark Results
 ![QEC Benchmark Results](plots/qec_benchmark_results.png)
 
-The benchmark results demonstrate several key findings:
+Our current benchmarking results reveal several key insights:
 
-#### 1. Fidelity Analysis
-- **Low Error Regime (p=0.01)**:
-  - ML-QEC achieves a mean fidelity of **0.983** with a standard deviation of **0.01**.
-  - IBM QEC shows a mean fidelity of **0.980** with a standard deviation of **0.015**.
-  - Both methods maintain quantum state quality effectively, with ML-QEC showing slightly better performance.
+1. **Overall QEC Performance**:
+   - ML-QEC maintains ~90% fidelity across error rates from 0.025 to 0.2
+   - IBM QEC shows significantly lower performance (~25% fidelity)
+   - The performance gap widens as error rates increase
 
-- **Medium Error Regime (p=0.05)**:
-  - ML-QEC fidelity averages **0.990** with a standard deviation of **0.020**.
-  - IBM QEC fidelity averages **0.920** with a standard deviation of **0.025**.
-  - ML-QEC's learning-based approach demonstrates better resilience to noise.
+2. **Error Type Performance**:
+   - ML-QEC shows better resilience against bit-flip errors (>95% at low error rates)
+   - ML-QEC phase error correction maintains >90% success even at higher error rates
+   - IBM QEC shows consistent but lower performance across error types
+   - The performance difference between bit and phase errors suggests our model has learned to handle phase errors more effectively
 
-- **High Error Regime (p=0.2)**:
-  - ML-QEC maintains a mean fidelity of **0.850** with a standard deviation of **0.030**.
-  - IBM QEC performance drops significantly to a mean fidelity of **0.750** with a standard deviation of **0.050**.
-  - This highlights the clear advantage of the ML-based approach in high-noise scenarios.
+3. **Performance Degradation Analysis**:
+   - ML-QEC shows a gradual decline in performance as error rates increase
+   - The decline is more pronounced for bit-flip errors than for phase errors
+   - At error rate 0.2, ML-QEC still maintains >85% fidelity
 
-#### 2. Computational Efficiency
-- **Execution Time Scaling**:
-  - ML-QEC exhibits **O(n)** scaling with state dimension, while IBM QEC shows **O(n²)** scaling due to syndrome measurements.
-  - The ML approach demonstrates a **2-3x speedup** across all error rates.
+4. **Comparative Advantages**:
+   - ML-QEC outperforms IBM QEC by a factor of 3-4x across all error rates
+   - The performance gap is most significant at higher error rates (0.15-0.2)
+   - This suggests our approach is particularly valuable for noisy intermediate-scale quantum (NISQ) devices
 
-- **Resource Requirements**:
-  - ML-QEC has a fixed overhead after training, while IBM QEC requires additional ancilla qubits and measurements.
-  - This creates a trade-off between classical and quantum resources.
+### Performance Comparison with Previous Version
 
-#### 3. Statistical Analysis
-- **Variance in Performance**:
-  - ML-QEC shows consistent performance with a variance (σ) of less than **0.02**.
-  - IBM QEC variance increases with error rate, indicating less predictable performance.
-  - The ML approach provides a more stable error correction mechanism.
+Compared to our previous implementation (master branch):
 
-- **Error Types**:
-  - ML-QEC effectively handles both bit-flip and phase-flip errors, while IBM QEC is more effective for bit-flip errors.
-  - This suggests a complementary use of both methods in practical applications.
+1. **Fidelity Differences**:
+   - Previous version: >95% average fidelity across error rates
+   - Current version: ~90% average fidelity across error rates
+   - ~5% decrease in overall performance
+
+2. **Success Rate Changes**:
+   - Previous version showed more consistent performance across error types
+   - Current version shows better phase error handling but slightly worse bit-flip error correction
+   
+3. **Reasons for Performance Changes**:
+   - More realistic noise modeling in current version (circuit-level vs. state-level)
+   - Adaptive measurement strategy introduces variability in training data
+   - Gate-specific error handling creates different error distributions
+
+4. **Trade-offs**:
+   - Lower but more realistic performance metrics
+   - Better representation of actual hardware behavior
+   - More actionable insights for real-world quantum error correction
+
+The current implementation prioritizes realistic simulation of quantum hardware behavior over optimistic performance metrics, providing a more accurate assessment of how our error correction strategy would perform on actual quantum devices.
 
 ### Detailed Metrics
 
@@ -137,78 +149,232 @@ The performance difference between ML-QEC and IBM QEC can be attributed to:
 | **Real-World Applicability**       | Designed for near-term quantum devices with practical constraints | Primarily theoretical, may not perform well on current hardware due to overhead and complexity |
 | **Training and Learning**          | Utilizes machine learning to improve performance over time | Static performance based on pre-defined protocols, no learning capability |
 
-### Summary
-The ML-QEC and tQST framework offers significant advantages in terms of efficiency, adaptability, and practicality compared to theoretical error correction frameworks like the surface code, making it more suitable for current and near-term quantum computing applications.
+### Training Strategy Evolution
 
-### Detailed Error Analysis
+### Master Branch (Previous Approach)
+The master branch contains our initial training strategy with the following characteristics:
+- **Simple Noise Model**: Uses a direct mathematical approach with Hermitian noise matrices
+- **Uniform Noise Application**: Applies noise uniformly to the entire state vector
+- **Batch Processing**: Generates complete training data upfront before training
+- **Higher Average Fidelity**: Achieves >95% fidelity across various error rates
+- **Better Success Rate**: Shows more consistent performance across different error types
 
-#### Error Types and Correlations
-![Error Correlation](plots/error_correlation.png)
+### Current Branch (Adaptive Approach)
+The current branch implements an adaptive training strategy:
+- **Circuit-Level Noise**: Models noise at the quantum gate level for more realistic simulation
+- **Adaptive tQST**: Selectively applies tomography based on gate types and error probabilities
+- **On-the-fly Data Generation**: Creates training examples during the training process
+- **Realistic IBM Hardware Integration**: Models noise based on actual quantum hardware characteristics
+- **Lower but More Realistic Performance**: Shows ~90% fidelity that better reflects real-world conditions
 
-The error correlation analysis reveals several key insights:
-1. **Error Type Independence**: Bit-flip and phase-flip errors show minimal correlation at low error rates (p=0.01), suggesting independent error channels
-2. **Error Coupling**: At higher error rates (p>0.1), we observe increased correlation between error types, indicating coupling between bit and phase errors
-3. **Asymmetric Response**: ML-QEC shows better resilience to phase errors compared to bit-flip errors, while IBM QEC performs more uniformly across error types
+### Performance Comparison
+While the current approach shows lower average fidelity and success rates compared to the master branch, it provides:
+- More realistic performance estimates for actual quantum hardware
+- Better insights into gate-specific error patterns
+- A framework that can be extended to handle more complex quantum circuits
 
-#### Resource Scaling
-![Resource Scaling](plots/resource_scaling.png)
+## Recommendations for Further Improvements
 
-The resource scaling analysis demonstrates:
-1. **Computational Complexity**:
-   - ML-QEC: O(n) scaling with input size
-   - IBM QEC: O(n²) scaling due to syndrome measurements
-   - Crossover point at n≈100 qubits
+1. **Hybrid Noise Model**:
+   ```python
+   # Combine circuit-level noise with state-level noise
+   def hybrid_noise_model(circuit, noise_strength):
+       # Apply gate-level noise first
+       noisy_circuit = apply_gate_noise(circuit)
+       # Then apply state-level noise for better learning
+       state = get_statevector(noisy_circuit)
+       noise_matrix = np.eye(len(state)) + noise_strength * np.random.randn(len(state), len(state))
+       noise_matrix = (noise_matrix + noise_matrix.conj().T) / 2
+       return noise_matrix @ state
+   ```
 
-2. **Memory Requirements**:
-   - ML-QEC: Fixed model size (64K parameters)
-   - IBM QEC: Linear in number of physical qubits
-   - Trade-off between classical and quantum resources
+2. **Adaptive Measurement Optimization**:
+   ```python
+   # Increase measurement probability for critical gates
+   def needs_tqst(self, gate: str, qubits: List[int]) -> bool:
+       # Increase from 30% to 50% for single-qubit gates
+       if gate in ['u3', 'rx', 'ry', 'rz']:
+           return np.random.random() < 0.5
+       # Always measure after multi-qubit gates
+       elif gate in ['cx', 'cz', 'swap']:
+           return True
+       return False
+   ```
 
-#### Error Pattern Analysis
-Our enhanced noise model includes:
-1. **Single-Qubit Errors**:
-   - Bit-flip (X gate): p
-   - Phase-flip (Z gate): p
-   - Amplitude damping: p
-   - Thermal relaxation: T1=50μs, T2=70μs
+3. **Transfer Learning Approach**:
+   ```python
+   # Pre-train on simplified data, then fine-tune
+   def train_with_transfer_learning(model):
+       # First train on simplified data
+       X_simple, Y_simple = generate_simple_training_data()
+       model.train(X_simple, Y_simple, epochs=50)
+       
+       # Then fine-tune with realistic data
+       circuits = generate_training_circuits()
+       model.fine_tune(circuits, epochs=100)
+   ```
 
-2. **Two-Qubit Errors**:
-   - Depolarizing: p
-   - Crosstalk: 1.2p (20% increase)
+4. **Ensemble Methods**:
+   ```python
+   # Train multiple models and combine predictions
+   class EnsembleQEC:
+       def __init__(self, n_models=5):
+           self.models = [PEMLP_QEC() for _ in range(n_models)]
+           
+       def train(self, data):
+           for model in self.models:
+               model.train(data)
+               
+       def predict(self, state):
+           predictions = [model(state) for model in self.models]
+           return torch.mean(torch.stack(predictions), dim=0)
+   ```
 
-3. **Measurement Errors**:
-   - Symmetric: p
-   - Asymmetric: 1.5p for 1→0 transitions
+5. **Extended Training**:
+   ```python
+   # More sophisticated training regimen
+   def train(self, n_epochs=300, batch_size=32):
+       # Use a more sophisticated scheduler
+       scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
+           self.optimizer, T_0=10, T_mult=2)
+       
+       # Add early stopping
+       patience = 20
+       best_loss = float('inf')
+       no_improve = 0
+       
+       for epoch in range(n_epochs):
+           # Training code here
+           
+           if loss < best_loss:
+               best_loss = loss
+               no_improve = 0
+               torch.save(model.state_dict(), 'best_model.pth')
+           else:
+               no_improve += 1
+               if no_improve >= patience:
+                   print(f"Early stopping at epoch {epoch}")
+                   break
+   ```
 
-The error pattern distribution shows:
-- No Error: 85% (p=0.01) → 40% (p=0.2)
-- Bit-Flip Only: 8% → 25%
-- Phase-Flip Only: 5% → 20%
-- Combined Errors: 2% → 15%
+6. **Circuit Diversity**:
+   ```python
+   def generate_diverse_circuits(num_circuits=1000):
+       circuits = []
+       for _ in range(num_circuits):
+           qc = QuantumCircuit(self.n_qubits)
+           
+           # Add random initialization
+           for q in range(self.n_qubits):
+               if np.random.random() < 0.5:
+                   qc.h(q)
+           
+           # Add varying circuit depth (1-10 layers)
+           depth = np.random.randint(1, 11)
+           for _ in range(depth):
+               # Add random gates with varying complexity
+               gate_type = np.random.choice(['simple', 'medium', 'complex'])
+               
+               if gate_type == 'simple':
+                   # Single qubit gates
+                   q = np.random.randint(0, self.n_qubits)
+                   gate = np.random.choice(['x', 'y', 'z', 'h'])
+                   getattr(qc, gate)(q)
+               elif gate_type == 'medium':
+                   # Two-qubit gates
+                   if self.n_qubits >= 2:
+                       q1, q2 = np.random.choice(range(self.n_qubits), 2, replace=False)
+                       gate = np.random.choice(['cx', 'cz', 'swap'])
+                       if gate == 'cx':
+                           qc.cx(q1, q2)
+                       elif gate == 'cz':
+                           qc.cz(q1, q2)
+                       else:
+                           qc.swap(q1, q2)
+               else:
+                   # Complex gates (e.g., Toffoli if enough qubits)
+                   if self.n_qubits >= 3:
+                       q1, q2, q3 = np.random.choice(range(self.n_qubits), 3, replace=False)
+                       qc.ccx(q1, q2, q3)
+           
+           circuits.append(qc)
+       return circuits
+   ```
 
-### Recommendations
+7. **Hardware-Specific Customization**:
+   ```python
+   def create_hardware_specific_noise_model(backend_name):
+       """Create a noise model based on real device properties"""
+       from qiskit.providers.aer.noise import NoiseModel
+       from qiskit.providers.aer.noise.errors import depolarizing_error, thermal_relaxation_error
+       
+       # Get properties from real device
+       provider = IBMQ.get_provider(hub='ibm-q')
+       backend = provider.get_backend(backend_name)
+       properties = backend.properties()
+       
+       # Create custom noise model
+       noise_model = NoiseModel()
+       
+       # Get gate error rates from device
+       for gate_name, qubits, error_rate in properties.gate_error:
+           # Add gate errors
+           if len(qubits) == 1:
+               # Single qubit gate error
+               noise_model.add_quantum_error(
+                   depolarizing_error(error_rate, 1), 
+                   gate_name, 
+                   qubits
+               )
+           else:
+               # Multi-qubit gate error
+               noise_model.add_quantum_error(
+                   depolarizing_error(error_rate, len(qubits)),
+                   gate_name,
+                   qubits
+               )
+       
+       # Add T1/T2 relaxation errors
+       for qubit, t1, t2 in zip(range(properties.n_qubits), 
+                               properties.t1, 
+                               properties.t2):
+           # Add relaxation error to all gates on this qubit
+           noise_model.add_quantum_error(
+               thermal_relaxation_error(t1, t2, 0),
+               ['u1', 'u2', 'u3'],
+               [qubit]
+           )
+       
+       return noise_model
+   ```
 
-Based on the comprehensive analysis:
+8. **Validation Strategy**:
+   ```python
+   def k_fold_cross_validation(model_class, data, k=5):
+       """Perform k-fold cross validation"""
+       fold_size = len(data) // k
+       results = []
+       
+       for i in range(k):
+           # Split data into train and validation
+           val_start = i * fold_size
+           val_end = (i + 1) * fold_size
+           
+           val_data = data[val_start:val_end]
+           train_data = np.concatenate([data[:val_start], data[val_end:]])
+           
+           # Train model
+           model = model_class()
+           model.train(train_data)
+           
+           # Evaluate on validation set
+           val_loss = model.evaluate(val_data)
+           results.append(val_loss)
+           
+       return np.mean(results), np.std(results)
+   ```
 
-1. **Error Rate Regimes**:
-   - Low (p<0.05): Both methods viable
-   - Medium (0.05<p<0.1): ML-QEC preferred
-   - High (p>0.1): ML-QEC significantly better
-
-2. **Resource Optimization**:
-   - Small systems (<50 qubits): IBM QEC
-   - Large systems (>50 qubits): ML-QEC
-   - Hybrid approach for intermediate sizes
-
-3. **Error Type Considerations**:
-   - Phase-dominated noise: ML-QEC
-   - Bit-flip dominated: Either method
-   - Mixed error types: ML-QEC with enhanced training
-
-4. **Future Improvements**:
-   - Implement adaptive error correction
-   - Optimize ML model architecture
-   - Explore hybrid quantum-classical approaches
+These improvements aim to bridge the performance gap while maintaining the realism of our current approach, ultimately leading to quantum error correction strategies that perform well in practical applications.
 
 ## Discussion
 The benchmarking results reveal several key insights:
@@ -222,9 +388,13 @@ The benchmarking results reveal several key insights:
 ```bash
 pip install -r requirements.txt
 ```
-
+### Rename config.py.bkp to config.py
+```bash
+mv config.py.bkp config.py
+```
 ### Running Benchmarks
 ```bash
+python train.py
 python benchmark.py
 ```
 
